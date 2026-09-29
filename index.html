@@ -1,62 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hub</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hub</title>
+<style>
+  :root {
+    --bg: #1b2838;
+    --bg-deep: #171a21;
+    --panel: #16202d;
+    --text: #c7d5e0;
+    --muted: #8f98a0;
+    --blue: #66c0f4;
+    --green-a: #75b022;
+    --green-b: #588a1b;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg-deep); }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Motiva Sans", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    background: radial-gradient(1200px 500px at 50% -100px, #2a475e 0%, var(--bg) 60%, var(--bg-deep) 100%) no-repeat;
+  }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  .topbar { background: var(--bg-deep); border-bottom: 1px solid #0e1218; }
+  .topbar-inner {
+    max-width: 1100px; margin: 0 auto; padding: 14px 20px;
+    display: flex; align-items: center; gap: 24px;
+  }
+  .logo { font-size: 22px; font-weight: 700; letter-spacing: .5px; color: #fff; }
+  .search {
+    margin-left: auto; width: min(260px, 100%);
+    background: #316282; border: 1px solid transparent; border-radius: 3px;
+    color: #fff; padding: 7px 10px; font: inherit; font-size: 14px;
+  }
+  .search::placeholder { color: #9bb7cb; }
+  .search:focus { background: #3b7196; outline: none; border-color: var(--blue); }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+  h2.section { margin: 0 0 12px; font-size: 15px; font-weight: 500; color: var(--blue); }
+
+  /* Featured (first link) */
+  .featured {
+    display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    background: var(--panel); border-radius: 3px; overflow: hidden;
+    box-shadow: 0 0 12px rgba(0,0,0,.5); margin-bottom: 32px;
+  }
+  .featured .art { min-height: 240px; }
+  .featured .info { padding: 22px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(135deg, #1f3347, var(--panel)); }
+  .featured h3 { margin: 0; font-size: 26px; font-weight: 400; color: #fff; }
+  .featured p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .featured .go { margin-top: auto; align-self: flex-start; }
+
+  /* Grid of capsules */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+  .card {
+    display: flex; flex-direction: column; background: var(--panel);
+    border-radius: 3px; overflow: hidden; box-shadow: 0 0 8px rgba(0,0,0,.5);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.6); }
+  .card .art { height: 110px; }
+  .card .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 500; color: #fff; }
+  .card p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .card .foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+  /* Shared art tile: gradient from the link's color plus a big glyph */
+  .art {
+    display: grid; place-items: center; position: relative;
+    background: linear-gradient(135deg, var(--c1), var(--c2));
+    font-size: 54px; text-shadow: 0 3px 10px rgba(0,0,0,.45);
+  }
+  .featured .art { font-size: 96px; }
+  .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 55%, rgba(0,0,0,.35)); }
+
+  .tag { font-size: 12px; color: var(--blue); background: rgba(102,192,244,.12); padding: 2px 8px; border-radius: 2px; }
+  .btn {
+    display: inline-block; padding: 6px 16px; border-radius: 2px; font-size: 14px; color: #fff;
+    background: linear-gradient(to right, var(--green-a), var(--green-b));
+  }
+  .card:hover .btn, .featured:hover .btn { background: linear-gradient(to right, #8bd12a, #6aa321); }
+
+  .empty { display: none; color: var(--muted); padding: 40px 0; text-align: center; }
+
+  @media (max-width: 720px) {
+    .featured { grid-template-columns: 1fr; }
+    .featured .art { min-height: 150px; }
+    .topbar-inner { flex-wrap: wrap; gap: 12px; }
+    .search { margin-left: 0; width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
+</style>
 </head>
 <body>
 
-  <main class="container">
-    <header class="header">
-      <h1 class="title">SELECT DESTINATION</h1>
-      <p class="subtitle">Choose a portal to proceed</p>
-    </header>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="logo" href="/">HUB</a>
+    <input class="search" id="search" type="search" placeholder="Search pages" aria-label="Search pages">
+  </div>
+</header>
 
-    <nav class="nav-grid">
-      <a href="/ppg" class="card">
-        <div class="card-content">
-          <h2>PPG</h2>
-          <p>Access the /ppg section</p>
-        </div>
-        <span class="card-arrow">&rarr;</span>
-      </a>
+<main>
+  <h2 class="section" id="featured-label">Featured</h2>
+  <div id="featured"></div>
 
-      <a href="/deltarune" class="card">
-        <div class="card-content">
-          <h2>DELTARUNE</h2>
-          <p>Access the /deltarune section</p>
-        </div>
-        <span class="card-arrow">&rarr;</span>
-      </a>
+  <h2 class="section">All pages</h2>
+  <div class="grid" id="grid"></div>
+  <p class="empty" id="empty">No pages match that search.</p>
+</main>
 
+<script>
+/* ============================================================
+   ADD A NEW PAGE: copy one line below, paste it in the list,
+   and change the values. That's it.
 
-            <a href="/nyan" class="card">
-        <div class="card-content">
-          <h2>Nyan Cat</h2>
-          <p>A cutie cat dancing in space, this description was NOT generated by ai lol</p>
-        </div>
-        <span class="card-arrow">&rarr;</span>
-      </a>
+   title : name shown on the card
+   url   : where it links to
+   desc  : short description
+   tag   : small label (Game, Tool, Fun...)
+   icon  : any emoji or letter for the art tile
+   c1,c2 : two colors for the tile gradient
+   featured: true on ONE entry to show it big at the top
+   ============================================================ */
+const LINKS = [
+  { title: "Cemu",      url: "/calculator", desc: "My own project, built with Emscripten.",              tag: "Project", icon: "🧮", c1: "#1e6f9f", c2: "#0d2f4a", featured: true },
+  { title: "PPG",       url: "/ppg",        desc: "Open the /ppg section.",                              tag: "Game",    icon: "🎮", c1: "#8a3ffc", c2: "#2b0f5a" },
+  { title: "Deltarune", url: "/deltarune",  desc: "Open the /deltarune section.",                        tag: "Game",    icon: "💜", c1: "#3a2a8f", c2: "#0b0a2e" },
+  { title: "Nyan Cat",  url: "/nyan",       desc: "A cutie cat dancing in space.",                       tag: "Fun",     icon: "🐱", c1: "#e0559e", c2: "#1a1440" },
+  { title: "Info",      url: "/info",       desc: "Learn more about this hub.",                          tag: "Info",    icon: "ℹ️", c1: "#4c6b22", c2: "#16240a" },
+];
+/* ============================================================ */
 
-      <a href="/calculator" class="card">
-        <div class="card-content">
-          <h2>Cemu</h2>
-          <p>tis my own project, made with emscripten</p>
-        </div>
-        <span class="card-arrow">&rarr;</span>
-      </a>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const art = (l) => `<div class="art" style="--c1:${esc(l.c1 || "#2a475e")};--c2:${esc(l.c2 || "#16202d")}"><span>${esc(l.icon || l.title[0])}</span></div>`;
 
-      <a href="/info" class="card">
-        <div class="card-content">
-          <h2>INFO</h2>
-          <p>Learn more about this hub</p>
-        </div>
-        <span class="card-arrow">&rarr;</span>
-      </a>
-    </nav>
-  </main>
+function render(query = "") {
+  const q = query.trim().toLowerCase();
+  const match = (l) => !q || `${l.title} ${l.desc} ${l.tag}`.toLowerCase().includes(q);
 
+  const feat = LINKS.find((l) => l.featured);
+  const showFeat = feat && !q;
+  $("featured-label").style.display = showFeat ? "" : "none";
+  $("featured").innerHTML = showFeat ? `
+    <a class="featured" href="${esc(feat.url)}">
+      ${art(feat)}
+      <div class="info">
+        <span class="tag" style="align-self:flex-start">${esc(feat.tag)}</span>
+        <h3>${esc(feat.title)}</h3>
+        <p>${esc(feat.desc)}</p>
+        <span class="btn go">Open</span>
+      </div>
+    </a>` : "";
+
+  const list = LINKS.filter((l) => match(l) && !(showFeat && l === feat));
+  $("grid").innerHTML = list.map((l) => `
+    <a class="card" href="${esc(l.url)}">
+      ${art(l)}
+      <div class="body">
+        <h3>${esc(l.title)}</h3>
+        <p>${esc(l.desc)}</p>
+        <div class="foot"><span class="tag">${esc(l.tag)}</span><span class="btn">Open</span></div>
+      </div>
+    </a>`).join("");
+  $("empty").style.display = list.length || showFeat ? "none" : "block";
+}
+
+$("search").addEventListener("input", (e) => render(e.target.value));
+render();
+</script>
 </body>
 </html>
